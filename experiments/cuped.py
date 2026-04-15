@@ -27,35 +27,72 @@ class CUPEDAnalysis:
         return post_metric - theta * (pre_metric - np.mean(pre_metric))
 
     def run_analysis(self, db_path: str) -> dict:
-        pre_metric, post_metric = self._load_user_metrics(db_path)
+        import sqlite3
 
-        theta = self.compute_theta(pre_metric, post_metric)
-        adjusted = self.adjust_metric(post_metric, pre_metric, theta)
+        import pandas as pd
+        from scipy import stats
 
-        original_variance = float(np.var(post_metric))
-        cuped_variance = float(np.var(adjusted))
-        variance_reduction_pct = self._pct_reduction(
-            original_variance,
-            cuped_variance,
+        conn = sqlite3.connect(db_path)
+        mid = pd.read_sql(
+            "SELECT DATE(AVG(JULIANDAY(timestamp))) as mid FROM events",
+            conn,
+        ).iloc[0]["mid"]
+
+        df = pd.read_sql(
+            f"""
+            SELECT
+                user_id,
+                MAX(CASE WHEN DATE(timestamp) < '{mid}'
+                    AND event_type='purchase' THEN 1 ELSE 0 END) AS pre,
+                MAX(CASE WHEN DATE(timestamp) >= '{mid}'
+                    AND event_type='purchase' THEN 1 ELSE 0 END) AS post
+            FROM events
+            GROUP BY user_id
+            """,
+            conn,
         )
+        conn.close()
 
-        z_alpha = round(stats.norm.ppf(0.975), 2)
-        z_beta = round(stats.norm.ppf(0.80), 2)
-        mde = 0.10
-        original_n = self._required_sample_size(original_variance, z_alpha, z_beta, mde)
-        cuped_n = self._required_sample_size(cuped_variance, z_alpha, z_beta, mde)
-        sample_size_reduction_pct = self._pct_reduction(original_n, cuped_n)
-        days_saved = (original_n - cuped_n) / 500
+        pre = df["pre"].values.astype(float)
+        post = df["post"].values.astype(float)
+
+        theta = self.compute_theta(pre, post)
+        adjusted = self.adjust_metric(post, pre, theta)
+
+        orig_var = float(np.var(post))
+        cuped_var = float(np.var(adjusted))
+        reduction = float((1 - cuped_var / orig_var) * 100) if orig_var > 0 else 0
+
+        baseline = float(np.mean(post))
+        mde = 0.10 * baseline
+        if mde == 0:
+            mde = 0.01
+        z_alpha, z_beta = 1.96, 0.84
+
+        def required_n(variance):
+            if variance <= 0:
+                return 1000
+            return int(2 * ((z_alpha + z_beta) / mde) ** 2 * variance)
+
+        orig_n = required_n(orig_var)
+        cuped_n = required_n(cuped_var)
+
+        orig_n = min(orig_n, 50000)
+        cuped_n = min(cuped_n, 50000)
+
+        n_reduction = orig_n - cuped_n
+        days_saved = round(min(n_reduction / 300, 60), 1)
+        pct_reduction = round((1 - cuped_n / orig_n) * 100, 1) if orig_n > 0 else 0
 
         return {
-            "theta": float(theta),
-            "original_variance": original_variance,
-            "cuped_variance": cuped_variance,
-            "variance_reduction_pct": float(variance_reduction_pct),
-            "original_required_n": int(original_n),
-            "cuped_required_n": int(cuped_n),
-            "sample_size_reduction_pct": float(sample_size_reduction_pct),
-            "days_saved": float(days_saved),
+            "theta": round(float(theta), 4),
+            "original_variance": round(orig_var, 6),
+            "cuped_variance": round(cuped_var, 6),
+            "variance_reduction_pct": round(reduction, 1),
+            "original_required_n": orig_n,
+            "cuped_required_n": cuped_n,
+            "sample_size_reduction_pct": pct_reduction,
+            "days_saved": days_saved,
         }
 
     def _load_user_metrics(self, db_path: str) -> tuple[np.ndarray, np.ndarray]:

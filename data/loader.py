@@ -10,14 +10,14 @@ EXCEL_PATH = Path("data/online_retail_II.xlsx")
 DB_PATH = Path("data/events.db")
 RNG_SEED = 42
 
-PURCHASE_CART_PROBABILITY = 0.65
-PURCHASE_VIEW_PROBABILITY = 0.80
+ADD_TO_CART_PROBABILITY = {"A": 0.68, "B": 0.78}
+VIEW_PROBABILITY = {"A": 0.72, "B": 0.80}
 BROWSE_CART_PROBABILITY = 0.30
 MIN_BROWSE_SESSIONS = 3
-MAX_BROWSE_SESSIONS = 8
+MAX_BROWSE_SESSIONS = 7
 
-TARGET_OVERALL_CONVERSION_RATE = 0.31
-TARGET_CART_TO_PURCHASE_RATE = 0.6413
+TARGET_OVERALL_CONVERSION_RATE = 0.35
+TARGET_CART_TO_PURCHASE_RATE = 0.67
 
 
 def load_transactions() -> pd.DataFrame:
@@ -87,8 +87,15 @@ def build_events(
     rng = np.random.default_rng(RNG_SEED)
     event_frames = []
 
-    cart_mask = rng.random(len(invoices)) < PURCHASE_CART_PROBABILITY
-    view_mask = cart_mask & (rng.random(len(invoices)) < PURCHASE_VIEW_PROBABILITY)
+    cart_probabilities = invoices["variant"].map(ADD_TO_CART_PROBABILITY).to_numpy()
+    cart_mask = rng.random(len(invoices)) < cart_probabilities
+    cart_invoices = invoices.loc[cart_mask].copy()
+    cart_invoices["cart_offset_minutes"] = rng.integers(2, 16, size=len(cart_invoices))
+
+    view_probabilities = cart_invoices["variant"].map(VIEW_PROBABILITY).to_numpy()
+    view_mask = rng.random(len(cart_invoices)) < view_probabilities
+    view_invoices = cart_invoices.loc[view_mask].copy()
+    view_invoices["view_offset_minutes"] = rng.integers(3, 31, size=len(view_invoices))
 
     event_frames.append(
         _invoice_events(
@@ -101,17 +108,17 @@ def build_events(
     )
     event_frames.append(
         _invoice_events(
-            invoices.loc[cart_mask],
+            cart_invoices,
             "add_to_cart",
-            pd.Timedelta(minutes=3),
+            "cart_offset_minutes",
             event_order=2,
         )
     )
     event_frames.append(
         _invoice_events(
-            invoices.loc[view_mask],
+            view_invoices,
             "view",
-            pd.Timedelta(minutes=10),
+            "view_offset_minutes",
             event_order=1,
         )
     )
@@ -147,26 +154,36 @@ def build_events(
 def _invoice_events(
     invoices: pd.DataFrame,
     event_type: str,
-    offset: pd.Timedelta,
+    offset: pd.Timedelta | str,
     event_order: int,
     revenue_from_purchase: bool = False,
 ) -> pd.DataFrame:
-    frame = invoices[
-        [
-            "user_id",
-            "timestamp",
-            "invoice_id",
-            "product_id",
-            "country",
-            "variant",
-            "total_revenue",
-        ]
-    ].copy()
+    columns = [
+        "user_id",
+        "timestamp",
+        "invoice_id",
+        "product_id",
+        "country",
+        "variant",
+        "total_revenue",
+    ]
+    if isinstance(offset, str):
+        columns.append(offset)
+    frame = invoices[columns].copy()
     frame["event_type"] = event_type
-    frame["timestamp"] = frame["timestamp"] - offset
+    if isinstance(offset, str):
+        frame["timestamp"] = frame["timestamp"] - pd.to_timedelta(
+            frame[offset],
+            unit="m",
+        )
+    else:
+        frame["timestamp"] = frame["timestamp"] - offset
     frame["revenue"] = frame["total_revenue"] if revenue_from_purchase else 0.0
     frame["event_order"] = event_order
-    return frame.drop(columns=["total_revenue"])
+    drop_columns = ["total_revenue"]
+    if isinstance(offset, str):
+        drop_columns.append(offset)
+    return frame.drop(columns=drop_columns)
 
 
 def _real_user_browse_events(
@@ -174,21 +191,29 @@ def _real_user_browse_events(
     invoices: pd.DataFrame,
     rng: np.random.Generator,
 ) -> pd.DataFrame:
+    user_windows = (
+        invoices.groupby("user_id", as_index=False)
+        .agg(
+            first_invoice=("timestamp", "min"),
+            last_invoice=("timestamp", "max"),
+        )
+        .merge(users[["user_id", "country", "variant"]], on="user_id", how="left")
+    )
     session_counts = rng.integers(
         MIN_BROWSE_SESSIONS,
         MAX_BROWSE_SESSIONS + 1,
-        size=len(users),
+        size=len(user_windows),
     )
-    repeated_users = users.loc[
-        users.index.repeat(session_counts),
-        ["user_id", "country", "variant"],
+    repeated_users = user_windows.loc[
+        user_windows.index.repeat(session_counts),
+        ["user_id", "country", "variant", "first_invoice", "last_invoice"],
     ].reset_index(drop=True)
-    repeated_users["timestamp"] = _random_timestamps(
-        invoices["timestamp"].min(),
-        invoices["timestamp"].max(),
-        len(repeated_users),
+    repeated_users["timestamp"] = _random_timestamps_between(
+        repeated_users["first_invoice"],
+        repeated_users["last_invoice"],
         rng,
     )
+    repeated_users = repeated_users.drop(columns=["first_invoice", "last_invoice"])
 
     view_events = repeated_users.copy()
     view_events["event_type"] = "view"
@@ -279,6 +304,20 @@ def _random_timestamps(
     start_second = pd.Timestamp(start).value // 1_000_000_000
     end_second = pd.Timestamp(end).value // 1_000_000_000
     random_seconds = rng.integers(start_second, end_second + 1, size=count)
+    return pd.to_datetime(random_seconds, unit="s")
+
+
+def _random_timestamps_between(
+    starts: pd.Series,
+    ends: pd.Series,
+    rng: np.random.Generator,
+) -> pd.Series:
+    start_seconds = pd.to_datetime(starts).astype("int64") // 1_000_000_000
+    end_seconds = pd.to_datetime(ends).astype("int64") // 1_000_000_000
+    span_seconds = np.maximum(end_seconds - start_seconds, 0)
+    random_seconds = start_seconds + np.floor(
+        rng.random(len(starts)) * (span_seconds + 1)
+    ).astype("int64")
     return pd.to_datetime(random_seconds, unit="s")
 
 

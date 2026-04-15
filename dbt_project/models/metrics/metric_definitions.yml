@@ -1,1 +1,41 @@
-# ExperimentOS | metric_definitions.yml | TODO: implement
+version: 2
+metrics:
+  - name: conversion_rate
+    label: Purchase Conversion Rate
+    description: "Viewers who complete a purchase"
+    type: ratio
+    owner: data_team
+    last_modified: "2026-04-15"
+    tags: [core, revenue, primary]
+
+  - name: add_to_cart_rate
+    label: Add-to-Cart Rate
+    description: "Viewers who add at least one item to cart"
+    type: ratio
+    owner: data_team
+    last_modified: "2026-04-15"
+    tags: [funnel, engagement]
+
+  - name: retention_rate_week1
+    label: Week 1 Retention Rate
+    description: "Users active in week 1 after acquisition"
+    type: percentage
+    owner: data_team
+    last_modified: "2026-04-15"
+    tags: [retention, ltv]
+
+  - name: revenue_per_user
+    label: Revenue Per User
+    description: "Total net revenue divided by unique users"
+    type: ratio
+    owner: data_team
+    last_modified: "2026-04-15"
+    tags: [core, revenue, guardrail]
+
+  - name: cart_abandonment_rate
+    label: Cart Abandonment Rate
+    description: "Cart adders who did not complete purchase"
+    type: ratio
+    owner: data_team
+    last_modified: "2026-04-15"
+    tags: [funnel, diagnostic]

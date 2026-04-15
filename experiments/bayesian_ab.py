@@ -2,7 +2,7 @@ import sqlite3
 
 import numpy as np
 import plotly.graph_objects as go
-from scipy.stats import beta
+from scipy.stats import beta as beta_dist
 
 
 class BayesianABTest:
@@ -48,18 +48,41 @@ class BayesianABTest:
             "expected_loss": float(expected_loss),
             "control_rate": float(control_conv / control_n),
             "treatment_rate": float(treatment_conv / treatment_n),
+            "control_conversions": int(control_conv),
+            "control_n": int(control_n),
+            "treatment_conversions": int(treatment_conv),
+            "treatment_n": int(treatment_n),
             "recommendation": self._recommend(prob_b_better),
         }
 
     def plot_posteriors(self, results: dict) -> go.Figure:
-        if self._posterior_params is None:
-            raise ValueError("Run run_test() before plotting posterior distributions.")
+        alpha_a = 1 + results["control_conversions"]
+        beta_a = 1 + results["control_n"] - results["control_conversions"]
+        alpha_b = 1 + results["treatment_conversions"]
+        beta_b = 1 + results["treatment_n"] - results["treatment_conversions"]
 
-        alpha_a, beta_a = self._posterior_params["A"]
-        alpha_b, beta_b = self._posterior_params["B"]
-        x = np.linspace(0, 1, 1_000)
-        pdf_a = beta.pdf(x, alpha_a, beta_a)
-        pdf_b = beta.pdf(x, alpha_b, beta_b)
+        mean_a = alpha_a / (alpha_a + beta_a)
+        mean_b = alpha_b / (alpha_b + beta_b)
+        std_a = (
+            alpha_a
+            * beta_a
+            / ((alpha_a + beta_a) ** 2 * (alpha_a + beta_a + 1))
+        ) ** 0.5
+        std_b = (
+            alpha_b
+            * beta_b
+            / ((alpha_b + beta_b) ** 2 * (alpha_b + beta_b + 1))
+        ) ** 0.5
+
+        x_min = max(0.001, min(mean_a, mean_b) - 5 * max(std_a, std_b))
+        x_max = min(0.999, max(mean_a, mean_b) + 5 * max(std_a, std_b))
+        if x_max - x_min < 0.02:
+            center = (mean_a + mean_b) / 2
+            x_min, x_max = max(0, center - 0.05), min(1, center + 0.05)
+
+        x = np.linspace(x_min, x_max, 500)
+        pdf_a = beta_dist.pdf(x, alpha_a, beta_a)
+        pdf_b = beta_dist.pdf(x, alpha_b, beta_b)
         prob = results["prob_treatment_better"]
 
         fig = go.Figure()
@@ -69,7 +92,9 @@ class BayesianABTest:
                 y=pdf_a,
                 mode="lines",
                 name="Control (A)",
-                line=dict(color="blue", width=2),
+                line=dict(color="#534AB7", width=2),
+                fill="tozeroy",
+                fillcolor="rgba(83,74,183,0.12)",
             )
         )
         fig.add_trace(
@@ -78,38 +103,14 @@ class BayesianABTest:
                 y=pdf_b,
                 mode="lines",
                 name="Treatment (B)",
-                line=dict(color="orange", width=2),
+                line=dict(color="#1D9E75", width=2),
+                fill="tozeroy",
+                fillcolor="rgba(29,158,117,0.12)",
             )
         )
 
-        better_mask = pdf_b > pdf_a
-        fig.add_trace(
-            go.Scatter(
-                x=x[better_mask],
-                y=pdf_b[better_mask],
-                mode="lines",
-                line=dict(width=0),
-                showlegend=False,
-                hoverinfo="skip",
-            )
-        )
-        fig.add_trace(
-            go.Scatter(
-                x=x[better_mask],
-                y=pdf_a[better_mask],
-                mode="lines",
-                fill="tonexty",
-                fillcolor="rgba(255, 165, 0, 0.3)",
-                line=dict(width=0),
-                showlegend=False,
-                hoverinfo="skip",
-            )
-        )
-
-        mean_a = alpha_a / (alpha_a + beta_a)
-        mean_b = alpha_b / (alpha_b + beta_b)
-        fig.add_vline(x=mean_a, line_color="blue", line_dash="dash")
-        fig.add_vline(x=mean_b, line_color="orange", line_dash="dash")
+        fig.add_vline(x=mean_a, line_color="#534AB7", line_dash="dash")
+        fig.add_vline(x=mean_b, line_color="#1D9E75", line_dash="dash")
 
         fig.update_layout(
             title=f"Posterior Distributions — P(B > A) = {prob:.1f}%",
@@ -118,6 +119,7 @@ class BayesianABTest:
             legend_title_text="",
             template="plotly_white",
         )
+        fig.update_xaxes(range=[x_min, x_max])
 
         return fig
 
