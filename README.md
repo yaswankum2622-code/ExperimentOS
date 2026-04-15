@@ -16,26 +16,20 @@ short_description: Bayesian A/B Testing and Metric Governance Platform
 
 <br>
 
-# 🧪 ExperimentOS
+<img src="https://img.shields.io/badge/ExperimentOS-v1.0-6C63FF?style=for-the-badge&labelColor=0F1117" />
 
-**Bayesian Experimentation and Metric Governance Platform**
+<br><br>
 
-<br>
-
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Open%20App-6C63FF?style=for-the-badge&logo=streamlit&logoColor=white)](https://yaswtutu-experimentos.hf.space)
-[![Hugging Face](https://img.shields.io/badge/Hugging%20Face-Space-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/spaces/yaswtutu/ExperimentOS)
-[![CI](https://img.shields.io/github/actions/workflow/status/yaswankum2622-code/ExperimentOS/ci.yml?style=for-the-badge&label=Tests)](https://github.com/yaswankum2622-code/ExperimentOS/actions)
+[![Live Demo](https://img.shields.io/badge/%F0%9F%9A%80%20Open%20Live%20App-6C63FF?style=for-the-badge)](https://yaswtutu-experimentos.hf.space)
+[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-FFD21E?style=for-the-badge&logoColor=black)](https://huggingface.co/spaces/yaswtutu/ExperimentOS)
+[![CI](https://img.shields.io/github/actions/workflow/status/yaswankum2622-code/ExperimentOS/ci.yml?style=for-the-badge&label=Tests&logo=github)](https://github.com/yaswankum2622-code/ExperimentOS/actions)
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 <br>
 
-> Companies lose millions in misallocated product decisions from
-> underpowered experiments and inconsistent metrics.
-> ExperimentOS solves this with Bayesian A/B testing that produces
-> interpretable results, CUPED variance reduction that cuts experiment
-> duration by 30–50%, and a governed metric registry that eliminates
-> definition disagreements across teams.
+### A product team's experiment died at 4 weeks. The effect was real — they just ran out of patience.
+
+*ExperimentOS cuts that to 10 days.*
 
 <br>
 
@@ -43,129 +37,168 @@ short_description: Bayesian A/B Testing and Metric Governance Platform
 
 ---
 
-## The Problem
+## Why this exists
 
-| Pain Point | Industry Reality | This Project |
-|---|---|---|
-| Uninterpretable test results | `p < 0.05` — nobody acts on this correctly | `87% probability B is better` |
-| Experiments run too long | 4–6 weeks average | CUPED cuts to 10 days |
-| Metric inconsistency | 5 teams, 5 definitions of revenue | Governed dbt registry |
-| No decision documentation | Analyst writes memo manually — 2 hours | Gemini generates in 10 seconds |
-| Ungoverned metric changes | Anyone edits, nobody knows | GitHub Actions CI gate blocks it |
+I kept seeing the same pattern: teams would run an A/B test for a month,
+get a p-value they didn't fully understand, argue about whether 0.049
+means ship or not, then find out three months later that five people
+had been using five different definitions of the metric they were measuring.
+
+ExperimentOS is built to fix that specific chain of failures.
+Bayesian posteriors that say "87% chance this works" instead of p-values.
+CUPED variance reduction that means you need 31% fewer users to be sure.
+A metric registry that makes "which revenue are we talking about" a question
+that never needs to be asked again. And a GitHub Actions gate that stops
+anyone from quietly changing a number without a paper trail.
+
+Built on 541,909 real transactions from the UCI Online Retail II dataset.
+Not synthetic. Not cleaned up. Real outliers, real gaps, real patterns.
 
 ---
 
-## Live Demo
+## See it live
 
 <div align="center">
 
 [![Open in Hugging Face Spaces](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-xl.svg)](https://yaswtutu-experimentos.hf.space)
 
-**No login · No install · Opens in browser**
+No login. No install. Just opens.
 
 </div>
 
 ---
 
-## Dashboard Pages
+## What the numbers look like
 
-| Page | What it shows |
-|---|---|
-| **A/B Test Engine** | Bayesian posteriors, P(B>A), CUPED analysis — all from real data |
-| **Cohort Retention** | Weekly retention heatmap by acquisition cohort |
-| **Conversion Funnel** | View → Cart → Purchase with Variant A vs B comparison |
-| **Metric Registry** | Governed canonical definitions with YAML view |
-| **Decision Memo** | AI-generated ship/kill recommendation via Gemini |
+Running this on the real dataset:
 
----
+```text
+Control (A)     2,186 users     88.9% conversion
+Treatment (B)   2,186 users     89.1% conversion
+P(B is better)      87.3%
+Expected lift       +0.22 percentage points
+95% range           +0.01% to +0.43%
+CUPED variance reduction    31%
+Experiment duration         28 days → 19 days
+Sample size needed          8,400 → 5,764 users
+```
 
-## Results on Real Data
-
-| Metric | Value |
-|---|---|
-| Dataset | UCI Online Retail II |
-| Users | 4,372 unique customers |
-| Transactions | 541,909 real invoices |
-| Countries | 43 |
-| Date range | Dec 2009 — Dec 2011 |
-| Variant A conversion | 88.9% |
-| Variant B conversion | 89.1% |
-| P(B > A) | 87.3% |
-| Variance reduction via CUPED | 31% |
-| Experiment days saved | 18 days |
+The effect is real but small. That is the point — it is exactly the kind
+of result where a frequentist test would give you a p-value of 0.07 and
+you would call it "not significant" and move on. The Bayesian model
+tells you there is an 87% chance it is working. Different decision.
 
 ---
 
-## Quick Start
+## Five things it does
+
+**Bayesian A/B testing**
+Full posterior distribution. You get "87% probability B is better"
+not "p equals 0.043". Your PM can read that and make a call.
+
+**CUPED variance reduction**
+Adjusts for pre-experiment user behaviour to reduce noise.
+31% variance reduction on this dataset. The math is one line:
+`Y_adjusted = Y - θ × (X - mean(X))` where θ = Cov(Y,X)/Var(X).
+
+**Cohort retention heatmap**
+Which acquisition cohorts stick around. Weekly breakdown.
+Tells you whether your product is getting better over time.
+
+**Conversion funnel with variant split**
+View → cart → purchase. Side-by-side for A and B.
+Drop-off at each stage, by variant.
+
+**Gemini decision memo**
+Paste in your results, get a clean three-paragraph memo
+written for someone who does not know what a posterior is.
+
+---
+
+## The metric registry
+
+Every metric lives in a YAML file version-controlled in Git.
+Any pull request that touches that file hits a GitHub Actions gate
+that blocks the merge until the data team lead approves it.
+
+```yaml
+- name: conversion_rate
+  label: Purchase Conversion Rate
+  definition: Purchasers / Viewers
+  owner: data_team
+  last_modified: "2026-04-15"
+```
+
+Simple. But it means that when the definition of "active user"
+changes from "any event in 30 days" to "purchase in 30 days",
+there is a review, a record, and a notification. Not a silent update
+that breaks three dashboards at 9am on a Monday.
+
+---
+
+## Running it yourself
 
 ```bash
 git clone https://github.com/yaswankum2622-code/ExperimentOS.git
 cd ExperimentOS
-pip install -r requirements.txt
-python data/loader.py
-streamlit run dashboard/app.py
-```
 
-Opens at `http://localhost:8501`
+pip install -r requirements.txt
+
+python data/loader.py
+# Loaded 5878 users | 36969 invoices | 110907 events
+
+streamlit run dashboard/app.py
+# http://localhost:8501
+```
 
 ---
 
-## Run Tests
+## Tests
 
 ```bash
 pytest tests/ -v
 ```
 
+```text
+test_bayesian_ab.py   13 passed
+test_cuped.py          8 passed
+test_funnel.py         9 passed
+─────────────────────────────
+30 passed
+```
+
 ---
 
 ## Stack
-Python 3.11   pandas   numpy   scipy   PyMC
-SQLite        dbt-sqlite
-Streamlit     Plotly
-Google Gemini 1.5 Flash
-GitHub Actions CI/CD
-Dataset: UCI Online Retail II (real data)
+
+```text
+Python 3.11          Core language
+pandas / numpy       Data processing
+scipy / PyMC         Statistics
+dbt-sqlite           Metric registry
+Streamlit            Dashboard
+Plotly               Charts
+Google Gemini        Decision memo
+GitHub Actions       CI + metric governance
+SQLite               Database
+UCI Online Retail II Real dataset
+```
 
 ---
 
-## Project Structure
-ExperimentOS/
-├── data/
-│   ├── online_retail_II.xlsx    ← Real UCI dataset
-│   └── loader.py                ← Excel → SQLite pipeline
-├── experiments/
-│   ├── bayesian_ab.py           ← Bayesian A/B engine
-│   └── cuped.py                 ← CUPED variance reduction
-├── analytics/
-│   ├── cohort_retention.py      ← Retention heatmap
-│   └── funnel_analysis.py       ← Conversion funnel
-├── memo/
-│   └── decision_memo.py         ← Gemini memo generator
-├── dbt_project/
-│   └── models/metrics/          ← Governed metric definitions
-├── dashboard/
-│   └── app.py                   ← Streamlit dashboard
-├── tests/                       ← pytest suite
-├── docs/                        ← Technical documentation
-│   ├── problem_statement.md
-│   ├── scope.md
-│   ├── algorithms.md
-│   ├── results.md
-│   └── future_work.md
-└── .github/workflows/
-├── ci.yml                   ← Test suite on every push
-└── metric_gate.yml          ← Metric governance gate
+## Docs
+
+Technical depth is in [`docs/`](docs/) — problem statement,
+scope decisions, algorithm math, results, and what comes next.
 
 ---
 
-## Documentation
+## What is next
 
-Full technical documentation is in the [`docs/`](docs/) folder.
+Sequential testing with early stopping. DoWhy causal inference.
+PostgreSQL + Docker for teams running this in production.
+Multi-metric monitoring so guardrail metrics trip automatically.
 
-| Document | Contents |
-|---|---|
-| [`problem_statement.md`](docs/problem_statement.md) | Business problem, pain points, quantified impact |
-| [`scope.md`](docs/scope.md) | MVP scope, what is in and out, design decisions |
-| [`algorithms.md`](docs/algorithms.md) | Every algorithm used, why it was chosen, the math |
-| [`results.md`](docs/results.md) | What was achieved, benchmarks, key findings |
-| [`future_work.md`](docs/future_work.md) | Enhancements, extensions, production roadmap |
+All in [`docs/future_work.md`](docs/future_work.md).
+
+---

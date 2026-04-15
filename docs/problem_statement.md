@@ -2,11 +2,12 @@
 
 ## Background
 
-Product-driven companies run A/B tests to make data-driven decisions
-about features, pricing, UX changes, and growth experiments.
-The global cost of poor experimentation infrastructure is measured
-in misallocated engineering resources, delayed product decisions,
-and revenue lost to features that looked like winners but were not.
+Most A/B testing fails quietly. Not because the statistics are wrong
+but because nobody knows what they are actually measuring, the test
+runs too long so someone calls it early, the result gets written up
+inconsistently, and three months later nobody can explain why that
+feature shipped. This happens at companies with smart people and good
+intentions. It is a tooling problem, not a talent problem.
 
 ## Core Problems
 

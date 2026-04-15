@@ -5,7 +5,7 @@ import scipy.stats as stats
 
 
 class CUPEDAnalysis:
-    """Variance reduction for experiments using pre-period behavior."""
+    """Reduce metric variance with pre-experiment user behavior."""
 
     def compute_theta(self, pre_metric, post_metric) -> float:
         pre_metric = np.asarray(pre_metric, dtype=float)

@@ -5,21 +5,21 @@ DB_PATH = Path(__file__).parent.parent / "data" / "events.db"
 
 
 def get_connection() -> sqlite3.Connection:
-    """Return SQLite connection with row_factory set."""
+    """Open SQLite connection with dict-like rows."""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
 
 def run_query(sql: str, params: tuple = ()) -> list[dict]:
-    """Execute SELECT query, return list of dicts."""
+    """Run a SELECT query and return rows as dictionaries."""
     with get_connection() as conn:
         cursor = conn.execute(sql, params)
         return [dict(row) for row in cursor.fetchall()]
 
 
 def get_experiment_summary() -> dict:
-    """Return high-level experiment stats for dashboard."""
+    """Summarize users, purchasers, conversion, and revenue by variant."""
     sql = """
     SELECT
         variant,

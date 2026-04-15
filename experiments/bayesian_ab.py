@@ -6,7 +6,7 @@ from scipy.stats import beta
 
 
 class BayesianABTest:
-    """Bayesian A/B test using a Beta-Binomial conjugate model."""
+    """Run Bayesian A/B test on two conversion rate variants."""
 
     def __init__(self, n_draws: int = 100_000, random_seed: int | None = 42) -> None:
         self.n_draws = n_draws

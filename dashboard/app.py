@@ -21,7 +21,7 @@ DB_PATH = "data/events.db"
 
 
 def ensure_database(db_path: str) -> None:
-    """Generate the SQLite database on first boot if the source workbook exists."""
+    """Create events.db from the workbook when the DB is missing."""
     if os.path.exists(db_path):
         return
     if not os.path.exists("data/online_retail_II.xlsx"):
@@ -230,7 +230,7 @@ hr { border-color: var(--border) !important; }
 
 
 def load_data(db_path: str) -> dict:
-    """Load key stats from DB. Return empty dict if DB missing."""
+    """Read sidebar and variant summary stats from SQLite."""
     if not os.path.exists(db_path):
         return {}
 
@@ -270,7 +270,7 @@ def load_data(db_path: str) -> dict:
 
 
 def plotly_dark_layout() -> dict:
-    """Shared Plotly layout config for dark theme."""
+    """Return the dark Plotly layout used across dashboard charts."""
     return dict(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(26,29,39,0.6)",
@@ -296,7 +296,7 @@ def plotly_dark_layout() -> dict:
 
 
 def badge_html(recommendation: str) -> str:
-    """Return coloured badge HTML for recommendation."""
+    """Return badge HTML for the current recommendation."""
     mapping = {
         "Ship B": ("badge-green", "✓ Ship B"),
         "Keep A": ("badge-red", "✗ Keep A"),
