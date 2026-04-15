@@ -1,1 +1,23 @@
-# ExperimentOS | metric_gate.yml | TODO: implement
+name: Metric Definition Gate
+
+on:
+  pull_request:
+    paths:
+      - 'dbt_project/models/metrics/metric_definitions.yml'
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Block unapproved metric changes
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "  METRIC DEFINITION CHANGE DETECTED"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "This PR modifies canonical metric definitions."
+          echo "Required before merging:"
+          echo "  1. Data team lead approval"
+          echo "  2. Downstream dashboard impact check"
+          echo "  3. Stakeholder communication sent"
+          echo "Add label metric-approved to bypass."
+          exit 1

@@ -6,6 +6,7 @@ import numpy as np
 import sqlite3
 import sys
 import os
+import subprocess
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -17,6 +18,18 @@ from memo.decision_memo import generate_memo
 
 
 DB_PATH = "data/events.db"
+
+
+def ensure_database(db_path: str) -> None:
+    """Generate the SQLite database on first boot if the source workbook exists."""
+    if os.path.exists(db_path):
+        return
+    if not os.path.exists("data/online_retail_II.xlsx"):
+        return
+    subprocess.run([sys.executable, "data/loader.py"], check=False)
+
+
+ensure_database(DB_PATH)
 
 
 st.set_page_config(
