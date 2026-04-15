@@ -64,33 +64,44 @@ def compute_retention(db_path: str) -> go.Figure:
 
 
 def _build_heatmap(retention: pd.DataFrame) -> go.Figure:
-    text = retention.map(lambda value: f"{value:.1f}%")
-    cohort_labels = [f"Week {week}" for week in retention.index]
+    cohort_matrix = retention.tail(16)
+    cohort_matrix = cohort_matrix.iloc[:, :9]
+    cohort_matrix = cohort_matrix.round(1)
+    cohort_matrix.index = [f"Week {week}" for week in cohort_matrix.index]
 
     fig = go.Figure(
         data=go.Heatmap(
-            z=retention.values,
-            x=list(retention.columns),
-            y=cohort_labels,
-            colorscale="Blues",
-            text=text.values,
-            texttemplate="%{text}",
-            colorbar=dict(title="Retention %"),
-            hovertemplate=(
-                "Cohort: %{y}<br>"
-                "Weeks Since First Purchase: %{x}<br>"
-                "Retention: %{text}<extra></extra>"
+            z=cohort_matrix.values,
+            x=[f"Week {i}" for i in range(9)],
+            y=cohort_matrix.index.tolist(),
+            text=cohort_matrix.values,
+            texttemplate="%{text:.1f}%",
+            colorscale=[
+                [0.0, "#F7F8FA"],
+                [0.3, "#EEEDFE"],
+                [0.7, "#7F77DD"],
+                [1.0, "#26215C"],
+            ],
+            showscale=True,
+            colorbar=dict(
+                title="Retention %",
+                ticksuffix="%",
+                tickfont=dict(size=11),
             ),
+            hoverongaps=False,
+            xgap=2,
+            ygap=2,
         )
     )
 
     fig.update_layout(
-        title="Cohort Retention — Weekly Retention Rate (%)",
-        xaxis_title="Weeks Since First Purchase",
-        yaxis_title="Acquisition Cohort",
-        height=max(420, 90 + 34 * max(6, len(cohort_labels))),
+        height=520,
+        title="Weekly cohort retention — last 16 cohorts (%)",
+        xaxis_title="Weeks since first purchase",
+        yaxis_title="Acquisition cohort",
+        xaxis=dict(side="bottom"),
+        yaxis=dict(autorange="reversed"),
         template="plotly_white",
     )
-    fig.update_yaxes(autorange="reversed")
 
     return fig

@@ -10,13 +10,13 @@ EXCEL_PATH = Path("data/online_retail_II.xlsx")
 DB_PATH = Path("data/events.db")
 RNG_SEED = 42
 
-ADD_TO_CART_PROBABILITY = {"A": 0.68, "B": 0.78}
-VIEW_PROBABILITY = {"A": 0.72, "B": 0.80}
+ADD_TO_CART_PROBABILITY = {"A": 0.62, "B": 0.76}
+VIEW_PROBABILITY = {"A": 0.68, "B": 0.84}
 BROWSE_CART_PROBABILITY = 0.30
 MIN_BROWSE_SESSIONS = 3
 MAX_BROWSE_SESSIONS = 7
 
-TARGET_OVERALL_CONVERSION_RATE = 0.35
+TARGET_CONVERSION_RATE = {"A": 0.32, "B": 0.38}
 TARGET_CART_TO_PURCHASE_RATE = 0.67
 
 
@@ -239,55 +239,75 @@ def _anonymous_browse_events(
     users: pd.DataFrame,
     rng: np.random.Generator,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    purchasers = events.loc[events["event_type"] == "purchase", "user_id"].nunique()
-    target_viewers = round(purchasers / TARGET_OVERALL_CONVERSION_RATE)
-    target_cart_adders = round(purchasers / TARGET_CART_TO_PURCHASE_RATE)
+    synthetic_user_frames = []
+    start_user_id = int(users["user_id"].max()) + 1
 
-    current_viewers = events.loc[events["event_type"] == "view", "user_id"].nunique()
+    for variant, conversion_rate in TARGET_CONVERSION_RATE.items():
+        variant_events = events[events["variant"] == variant]
+        purchasers = variant_events.loc[
+            variant_events["event_type"] == "purchase",
+            "user_id",
+        ].nunique()
+        current_viewers = variant_events.loc[
+            variant_events["event_type"] == "view",
+            "user_id",
+        ].nunique()
+        target_viewers = round(purchasers / conversion_rate)
+        extra_viewers = max(0, target_viewers - current_viewers)
+
+        if extra_viewers == 0:
+            continue
+
+        user_ids = np.arange(start_user_id, start_user_id + extra_viewers)
+        start_user_id += extra_viewers
+        timestamps = _random_timestamps(
+            events["timestamp"].min(),
+            events["timestamp"].max(),
+            extra_viewers,
+            rng,
+        )
+        countries = rng.choice(users["country"].dropna().to_numpy(), size=extra_viewers)
+
+        synthetic_user_frames.append(
+            pd.DataFrame(
+                {
+                    "user_id": user_ids,
+                    "first_seen": timestamps,
+                    "country": countries,
+                    "variant": variant,
+                    "total_orders": 0,
+                    "total_revenue": 0.0,
+                }
+            )
+        )
+
+    if not synthetic_user_frames:
+        return pd.DataFrame(columns=events.columns), pd.DataFrame(columns=users.columns)
+
+    synthetic_users = pd.concat(synthetic_user_frames, ignore_index=True)
+
+    purchasers = events.loc[events["event_type"] == "purchase", "user_id"].nunique()
+    target_cart_adders = round(purchasers / TARGET_CART_TO_PURCHASE_RATE)
     current_cart_adders = events.loc[
         events["event_type"] == "add_to_cart",
         "user_id",
     ].nunique()
 
-    extra_viewers = max(0, target_viewers - current_viewers)
     extra_cart_adders = max(0, target_cart_adders - current_cart_adders)
-    extra_cart_adders = min(extra_cart_adders, extra_viewers)
-
-    if extra_viewers == 0:
-        return pd.DataFrame(columns=events.columns), pd.DataFrame(columns=users.columns)
-
-    start_user_id = int(users["user_id"].max()) + 1
-    user_ids = np.arange(start_user_id, start_user_id + extra_viewers)
-    timestamps = _random_timestamps(
-        events["timestamp"].min(),
-        events["timestamp"].max(),
-        extra_viewers,
-        rng,
-    )
-    countries = rng.choice(users["country"].dropna().to_numpy(), size=extra_viewers)
-
-    synthetic_users = pd.DataFrame(
-        {
-            "user_id": user_ids,
-            "first_seen": timestamps,
-            "country": countries,
-            "variant": np.where(user_ids % 2 == 0, "B", "A"),
-            "total_orders": 0,
-            "total_revenue": 0.0,
-        }
-    )
+    extra_cart_adders = min(extra_cart_adders, len(synthetic_users))
 
     view_events = synthetic_users[
         ["user_id", "country", "variant"]
     ].copy()
-    view_events["timestamp"] = timestamps
+    view_events["timestamp"] = synthetic_users["first_seen"]
     view_events["event_type"] = "view"
     view_events["invoice_id"] = None
     view_events["product_id"] = "BROWSE"
     view_events["revenue"] = 0.0
     view_events["event_order"] = 1
 
-    cart_events = view_events.iloc[:extra_cart_adders].copy()
+    cart_indices = rng.permutation(view_events.index.to_numpy())[:extra_cart_adders]
+    cart_events = view_events.loc[cart_indices].copy()
     cart_events["timestamp"] = cart_events["timestamp"] + pd.Timedelta(minutes=3)
     cart_events["event_type"] = "add_to_cart"
     cart_events["event_order"] = 2

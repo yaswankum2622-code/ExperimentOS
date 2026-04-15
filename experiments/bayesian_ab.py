@@ -37,7 +37,7 @@ class BayesianABTest:
         samples_b = rng.beta(alpha_b, beta_b, self.n_draws)
 
         prob_b_better = np.mean(samples_b > samples_a) * 100
-        lift_samples = ((samples_b - samples_a) / samples_a) * 100
+        lift_samples = (samples_b - samples_a) * 100
         expected_loss = np.mean(np.maximum(samples_a - samples_b, 0))
 
         return {
