@@ -25,7 +25,7 @@ short_description: Bayesian A/B Testing and Metric Governance Platform
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Open%20App-6C63FF?style=for-the-badge&logo=streamlit&logoColor=white)](https://yaswtutu-experimentos.hf.space)
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-Space-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/spaces/yaswtutu/ExperimentOS)
 [![CI](https://img.shields.io/github/actions/workflow/status/yaswankum2622-code/ExperimentOS/ci.yml?style=for-the-badge&label=Tests)](https://github.com/yaswankum2622-code/ExperimentOS/actions)
-[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 <br>
@@ -119,7 +119,7 @@ pytest tests/ -v
 ---
 
 ## Stack
-Python 3.12   pandas   numpy   scipy   PyMC
+Python 3.11   pandas   numpy   scipy   PyMC
 SQLite        dbt-sqlite
 Streamlit     Plotly
 Google Gemini 1.5 Flash
