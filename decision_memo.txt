@@ -1,0 +1,61 @@
+EXPERIMENT DECISION MEMO
+────────────────────────────────────────
+Generated: 2026-04-15
+Dataset: UCI Online Retail II
+Platform: ExperimentOS v1.0
+────────────────────────────────────────
+
+**Experiment Summary**
+
+We ran a controlled experiment across 16,916 users split
+between Control A (9,166 users) and Treatment B (7,750 users).
+The primary success metric was purchase conversion rate — the percentage
+of users who completed at least one purchase during the experiment window.
+The data comes from the UCI Online Retail II dataset covering real UK
+e-commerce transactions. We are using this conversion metric because it is
+the cleanest decision metric for this workflow: the user either purchased
+or did not purchase, and that outcome can be compared directly across the
+two variants without relying on subjective engagement proxies.
+
+**Results**
+
+Control A achieved a conversion rate of 32.00%. Treatment B
+achieved 38.00%. The observed difference is +6.00 percentage
+points in favour of Treatment B.
+Our Bayesian model puts the probability that B is genuinely better
+at 100.0% — meaning if we ran this experiment 100 times, we
+would expect B to win approximately 100 of them. That probability
+is more useful for the product team than a p-value because it answers the
+actual launch question: how likely is it that the treatment is better than
+the current experience?
+
+**Statistical Interpretation**
+
+The 95% Bayesian credible interval for the true lift is
+[+4.6pp, +7.4pp]. This means the actual effect,
+if it exists, is most likely somewhere in that range. The interval
+does not include zero, which supports a real positive effect. We observed +6.00pp in this sample, but at scale
+the true effect could be anywhere within the credible bounds above.
+That distinction matters because the observed lift is only one estimate
+from one sample of users. The interval gives us the range of effects we
+should plan around when deciding whether the upside is worth the rollout
+risk.
+
+**Business Impact Assessment**
+
+A +6.00pp improvement in conversion rate, sustained at full traffic, translates directly to higher revenue per marketing pound spent. Every 1pp improvement in conversion at this scale means meaningfully more completed purchases without any additional acquisition cost.
+For the business, the main value is that the conversion gain comes from
+existing traffic rather than additional acquisition spend. If this result
+holds after rollout, the same marketing budget and product surface would
+produce more completed purchases. We should still monitor revenue per user
+and refund-sensitive metrics because a conversion lift is only valuable if
+it does not come from lower-quality orders or downstream churn.
+
+**Decision and Next Steps**
+
+Based on 100.0% probability that Treatment B outperforms Control A, we have sufficient evidence to ship. The observed +6.00pp improvement in conversion rate represents a meaningful business impact that justifies full rollout. We recommend shipping Variant B to 100% of users. Set up monitoring dashboards to track conversion rate and revenue per user for the first 14 days post-launch. Schedule a retrospective in 30 days to confirm the lift sustained at full traffic. The owner for this rollout should publish
+the decision, update the experiment log, and make sure the metric registry
+continues to define conversion consistently for future comparisons. We
+should also keep this experiment as a reference case because it shows how
+Bayesian decision thresholds, credible intervals, and governed metrics work
+together in a real product decision.

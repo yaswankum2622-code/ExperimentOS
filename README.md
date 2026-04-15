@@ -1,375 +1,286 @@
----
-title: ExperimentOS
-emoji: 🧪
-colorFrom: purple
-colorTo: indigo
-sdk: streamlit
-sdk_version: 1.32.0
-python_version: 3.11
-app_file: dashboard/app.py
-pinned: true
-license: mit
-short_description: Bayesian A/B Testing and Metric Governance Platform
----
+# ExperimentOS
 
-<div align="center">
+ExperimentOS is a Bayesian A/B testing and metric governance dashboard built on real e-commerce transaction data.
 
-<br>
+It answers the question product teams actually ask: **"How likely is Variant B to be better than Variant A?"** Instead of stopping at a p-value, it returns a probability, a credible interval, CUPED variance reduction, funnel drop-off, cohort retention, governed metric definitions, and a decision memo written in plain English.
 
-```
-███████╗██╗  ██╗██████╗ ███████╗██████╗ ██╗███╗   ███╗███████╗███╗   ██╗████████╗ ██████╗ ███████╗
-██╔════╝╚██╗██╔╝██╔══██╗██╔════╝██╔══██╗██║████╗ ████║██╔════╝████╗  ██║╚══██╔══╝██╔═══██╗██╔════╝
-█████╗   ╚███╔╝ ██████╔╝█████╗  ██████╔╝██║██╔████╔██║█████╗  ██╔██╗ ██║   ██║   ██║   ██║███████╗
-██╔══╝   ██╔██╗ ██╔═══╝ ██╔══╝  ██╔══██╗██║██║╚██╔╝██║██╔══╝  ██║╚██╗██║   ██║   ██║   ██║╚════██║
-███████╗██╔╝ ██╗██║     ███████╗██║  ██║██║██║ ╚═╝ ██║███████╗██║ ╚████║   ██║   ╚██████╔╝███████║
-╚══════╝╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝   ╚═╝    ╚═════╝ ╚══════╝
-```
+**Live app:** https://yaswtutu-experimentos.hf.space  
+**Hugging Face Space:** https://huggingface.co/spaces/yaswtutu/ExperimentOS  
+**GitHub Actions:** https://github.com/yaswankum2622-code/ExperimentOS/actions
 
-### The experimentation platform that tells your PM *"87% chance this works"*
-### instead of a p-value nobody understands
-
-<br>
-
-[![Live App](https://img.shields.io/badge/🚀%20Open%20Live%20App-534AB7?style=for-the-badge&logoColor=white)](https://yaswtutu-experimentos.hf.space)
-[![HF Space](https://img.shields.io/badge/🤗%20Hugging%20Face-Space-FFD21E?style=for-the-badge&logoColor=black)](https://huggingface.co/spaces/yaswtutu/ExperimentOS)
-[![CI Tests](https://img.shields.io/github/actions/workflow/status/yaswankum2622-code/ExperimentOS/ci.yml?style=for-the-badge&label=Tests&logo=github&logoColor=white)](https://github.com/yaswankum2622-code/ExperimentOS/actions)
-[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-1D9E75?style=for-the-badge)](LICENSE)
-
-<br>
-
-![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)
-![Bayesian](https://img.shields.io/badge/Stats-Bayesian%20A%2FB-534AB7?style=flat-square)
-![CUPED](https://img.shields.io/badge/Method-CUPED-1D9E75?style=flat-square)
-![dbt](https://img.shields.io/badge/Data-dbt%20Metric%20Registry-FF694A?style=flat-square&logo=dbt&logoColor=white)
-![Gemini](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-4285F4?style=flat-square&logo=google&logoColor=white)
-![SQLite](https://img.shields.io/badge/DB-SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)
-![UCI](https://img.shields.io/badge/Data-UCI%20Online%20Retail%20II-orange?style=flat-square)
-
-</div>
+If the Space is sleeping, the first load can take a little longer because the app regenerates the SQLite database from the Excel dataset when needed.
 
 ---
 
-## What is this
+## Why This Exists
 
-Product teams run A/B tests wrong.
+Product teams run A/B tests all the time, but the decision process is often messy. One person reads a p-value as "probability the feature works." Another person changes the revenue definition halfway through the analysis. The experiment runs too long because the metric is noisy. The decision memo is written manually, inconsistently, or not at all.
 
-They get a p-value. They misinterpret it. The experiment runs four weeks
-because variance is high. Someone changes the definition of "revenue" halfway
-through. The decision memo never gets written. Three months later nobody
-remembers what shipped or why.
+ExperimentOS fixes that workflow with a small, end-to-end experimentation system:
 
-ExperimentOS fixes the entire chain.
+- Bayesian A/B testing for conversion rates
+- CUPED variance reduction to reduce required sample size
+- Cohort retention analysis
+- View to cart to purchase funnel analysis
+- dbt-style metric registry
+- GitHub Actions gate for metric definition changes
+- Gemini-powered decision memo generation
+- Streamlit dashboard ready for Hugging Face Spaces
 
-Built on 541,909 real UK e-commerce transactions from the UCI Online Retail II
-dataset. Not a toy demo. Real data, real drop-offs, real seasonal patterns.
-
----
-
-## See it live
-
-<div align="center">
-
-[![Open in HF Spaces](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-xl.svg)](https://yaswtutu-experimentos.hf.space)
-
-**No login · No install · Opens in browser · Free forever**
-
-</div>
+The project uses the UCI Online Retail II dataset: real UK e-commerce transactions from 2009 to 2011. The data has real users, real countries, real revenue, seasonal patterns, outliers, and uneven behavior. That makes the analysis more useful than a synthetic demo.
 
 ---
 
-## What it does
+## Dashboard Preview
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                                                                   │
-│   INPUT: Two variants of a product change                        │
-│                                                                   │
-│   ┌──────────────┐     ┌───────────────┐     ┌───────────────┐  │
-│   │  Bayesian    │     │    CUPED       │     │  Metric       │  │
-│   │  A/B Engine  │────▶│  Variance     │────▶│  Registry     │  │
-│   │              │     │  Reduction    │     │  (dbt)        │  │
-│   └──────────────┘     └───────────────┘     └───────────────┘  │
-│          │                     │                     │           │
-│          ▼                     ▼                     ▼           │
-│   "87% B is better"    "18 days saved"      "Metric locked"     │
-│                                                                   │
-│                    ┌──────────────────┐                          │
-│                    │  Gemini Decision │                          │
-│                    │  Memo Generator  │                          │
-│                    └──────────────────┘                          │
-│                            │                                     │
-│                            ▼                                     │
-│                    Plain English memo                            │
-│                    written for your PM                           │
-│                                                                   │
-└─────────────────────────────────────────────────────────────────┘
-```
+### Bayesian A/B Test Engine
 
----
+The A/B engine compares Control A and Treatment B using a Beta-Binomial Bayesian model. In the current run, Variant B has higher simulated purchase conversion, a clear posterior separation, and a shipping recommendation.
 
-## The numbers on real data
+![A/B Test Engine](visuals/01-ab-test-engine.png)
 
-| | Control A | Treatment B | Δ |
-|---|---|---|---|
-| Users | 9,166 | 7,750 | — |
-| Conversion | 32.0% | 38.0% | **+6.0pp** |
-| Revenue | £8.63M | £9.11M | **+£480K** |
-| P(B is better) | — | — | **100%** |
-| CUPED sample reduction | — | — | **25%** |
-| Experiment days saved | — | — | **4 days** |
+### CUPED Variance Reduction
 
----
+CUPED adjusts the post-experiment metric using pre-experiment behavior. That reduces variance and lowers the sample size needed for the same decision confidence.
 
-## Five pages. One platform.
+![CUPED Variance Reduction](visuals/02-cuped-variance-reduction.png)
 
-<table>
-<tr>
-<td width="20%" align="center">
+### Cohort Retention
 
-**📊 A/B Engine**
+Retention is shown by weekly acquisition cohort. The chart is limited to the latest cohorts and the first eight weeks so the pattern is readable.
 
-Bayesian posteriors.
-Not p-values.
+![Cohort Retention](visuals/03-cohort-retention.png)
 
-</td>
-<td width="20%" align="center">
+### Conversion Funnel
 
-**🔄 Cohort Retention**
+The funnel shows realistic drop-off from view to add-to-cart to purchase, with a separate A/B comparison.
 
-Weekly heatmap.
-Who stays and who leaves.
+![Conversion Funnel](visuals/04-conversion-funnel-overall.png)
 
-</td>
-<td width="20%" align="center">
+![A/B Funnel Comparison](visuals/05-conversion-funnel-ab-comparison.png)
 
-**🔽 Conversion Funnel**
+### Metric Registry
 
-View → Cart → Purchase.
-Side-by-side A vs B.
+Metric definitions live in YAML and are version-controlled. A GitHub Actions workflow blocks pull requests that change canonical metrics without approval.
 
-</td>
-<td width="20%" align="center">
+![Metric Registry](visuals/06-metric-registry.png)
 
-**📋 Metric Registry**
+![Metric Registry YAML](visuals/07-metric-registry-yaml.png)
 
-One definition.
-GitHub Actions gate.
+### Decision Memo
 
-</td>
-<td width="20%" align="center">
+The dashboard can generate a product-facing decision memo from the experiment results. A generated example is included in [`decision_memo.txt`](decision_memo.txt).
 
-**📝 Decision Memo**
-
-Gemini writes it.
-PM reads it. Ship.
-
-</td>
-</tr>
-</table>
+![Decision Memo](visuals/08-decision-memo-overview.png)
 
 ---
 
-## Why Bayesian
+## Current Result Snapshot
+
+| Metric | Control A | Treatment B |
+|---|---:|---:|
+| Users | 9,166 | 7,750 |
+| Purchase conversion | 32.0% | 38.0% |
+| Revenue | GBP 8.63M | GBP 9.11M |
+| Observed lift | - | +6.0 percentage points |
+| P(B > A) | - | 100.0% |
+| Recommendation | - | Ship B - Strong evidence |
+
+Funnel snapshot:
+
+| Stage | Rate |
+|---|---:|
+| View to cart | 51.9% |
+| Cart to purchase | 67.0% |
+| Overall conversion | 34.7% |
+
+CUPED snapshot:
+
+| Metric | Value |
+|---|---:|
+| Variance reduction | 25.0% |
+| Original sample size | 4,718 |
+| CUPED sample size | 3,536 |
+| Sample saved | 25.1% |
+
+---
+
+## Sample Decision Memo
+
+The memo generator turns experiment statistics into language a product team can use.
+
+From [`decision_memo.txt`](decision_memo.txt):
+
+> We ran a controlled experiment across 16,916 users split between Control A (9,166 users) and Treatment B (7,750 users). The primary success metric was purchase conversion rate - the percentage of users who completed at least one purchase during the experiment window.
+
+> Control A achieved a conversion rate of 32.00%. Treatment B achieved 38.00%. The observed difference is +6.00 percentage points in favour of Treatment B. Our Bayesian model puts the probability that B is genuinely better at 100.0%.
+
+> Based on 100.0% probability that Treatment B outperforms Control A, we have sufficient evidence to ship. The observed +6.00pp improvement in conversion rate represents a meaningful business impact that justifies full rollout.
+
+The full memo is tracked as a project artifact so reviewers can see what the AI output looks like without running the app.
+
+---
+
+## How It Works
+
+### 1. Data Loader
+
+`data/loader.py` reads `data/online_retail_II.xlsx`, combines both Excel sheets, cleans invalid rows, engineers user and revenue columns, assigns users deterministically to A or B, simulates funnel events, and writes three SQLite tables:
+
+- `events`
+- `users`
+- `invoices`
+
+The generated database is `data/events.db`. It is ignored by Git because it can be regenerated.
+
+### 2. Bayesian A/B Test
+
+`experiments/bayesian_ab.py` uses a Beta(1,1) prior and updates it with observed conversions:
 
 ```python
-# What everyone does
-p_value = 0.043
-# "Is this significant?" — nobody actually knows
-
-# What ExperimentOS does
-prob_b_better = 100.0%
-# "100% chance B is better" — your PM can act on this
+Posterior A = Beta(1 + conversions_A, 1 + users_A - conversions_A)
+Posterior B = Beta(1 + conversions_B, 1 + users_B - conversions_B)
+P(B > A) = mean(samples_B > samples_A)
 ```
 
-Frequentist tests tell you the probability of seeing this data
-if there were no effect. Nobody wants that.
+The output is directly interpretable: probability B is better, expected lift, credible interval, expected loss, and recommendation.
 
-Bayesian posteriors tell you the probability that the treatment
-actually works. That is the question your team is asking.
+### 3. CUPED
+
+`experiments/cuped.py` uses pre-experiment behavior as a covariate:
+
+```python
+theta = Cov(post_metric, pre_metric) / Var(pre_metric)
+Y_cuped = post_metric - theta * (pre_metric - mean(pre_metric))
+```
+
+This reduces variance and lowers the sample size needed for the same statistical power.
+
+### 4. Analytics
+
+`analytics/funnel_analysis.py` computes unique users at each stage of the purchase journey.  
+`analytics/cohort_retention.py` computes weekly retention by acquisition cohort.
+
+### 5. Governance
+
+`dbt_project/models/metrics/metric_definitions.yml` stores canonical metric definitions.  
+`.github/workflows/metric_gate.yml` blocks pull requests that modify those definitions without review.
 
 ---
 
-## Why CUPED
-
-Your experiment variance is killing your velocity.
-
-```
-Standard approach:
-  Required sample:  4,718 users
-  At 300 users/day: 15.7 days
-
-With CUPED:
-  Adjust for pre-experiment behaviour
-  theta = Cov(Y, X) / Var(X)
-  Required sample:  3,536 users
-  At 300 users/day: 11.8 days
-
-Saved: 4 days. Per experiment. Every experiment.
-At 20 experiments/year: 80 days of faster product decisions.
-```
-
-Used in production at Airbnb, Netflix, LinkedIn, and Spotify.
-
----
-
-## Why a metric registry
-
-When five teams have five definitions of "revenue", every
-experiment produces five different answers.
-
-ExperimentOS puts metric definitions in YAML, version-controlled
-in Git, with a GitHub Actions gate that blocks any PR modifying
-them without data team approval.
-
-```yaml
-- name: conversion_rate
-  label: Purchase Conversion Rate
-  description: Viewers who complete a purchase
-  owner: data_team
-  last_modified: "2026-04-15"
-```
-
-Change it without approval? The PR fails. Automatically.
-
----
-
-## Quick start
+## Run Locally
 
 ```bash
 git clone https://github.com/yaswankum2622-code/ExperimentOS.git
 cd ExperimentOS
 
 pip install -r requirements.txt
-
 python data/loader.py
-# Loaded 16,916 users | 541,909 invoices | 1.6M events
-
 streamlit run dashboard/app.py
-# http://localhost:8501
+```
+
+The app opens at:
+
+```text
+http://localhost:8501
 ```
 
 ---
 
-## Dataset
+## Run Tests
 
-**UCI Online Retail II**
-541,909 real UK e-commerce transactions
-Dec 2009 — Dec 2011 · 41 countries · 3,684 unique products
+```bash
+pytest tests/ -v --tb=short
+```
 
-[Download from UCI ML Repository](https://archive.ics.uci.edu/dataset/502/online+retail+ii)
+Current local suite:
 
-Place the downloaded file as `data/online_retail_II.xlsx`
+```text
+30 passed
+```
 
 ---
 
-## Run tests
+## Project Structure
 
-```bash
-pytest tests/ -v
-
-# test_bayesian_ab.py   13 passed
-# test_cuped.py          8 passed
-# test_funnel.py         6 passed
-# ──────────────────────────────
-# 27 passed
+```text
+ExperimentOS/
+├── app.py
+├── README.md
+├── requirements.txt
+├── verify.py
+├── decision_memo.txt
+├── visuals/
+│   ├── 01-ab-test-engine.png
+│   ├── 02-cuped-variance-reduction.png
+│   ├── 03-cohort-retention.png
+│   ├── 04-conversion-funnel-overall.png
+│   ├── 05-conversion-funnel-ab-comparison.png
+│   ├── 06-metric-registry.png
+│   ├── 07-metric-registry-yaml.png
+│   ├── 08-decision-memo-overview.png
+│   └── 09-decision-memo-detail.png
+├── data/
+│   ├── online_retail_II.xlsx
+│   └── loader.py
+├── experiments/
+│   ├── bayesian_ab.py
+│   ├── cuped.py
+│   └── frequentist_ab.py
+├── analytics/
+│   ├── cohort_retention.py
+│   └── funnel_analysis.py
+├── memo/
+│   └── decision_memo.py
+├── dashboard/
+│   └── app.py
+├── dbt_project/
+│   └── models/
+├── tests/
+├── docs/
+└── .github/workflows/
 ```
 
 ---
 
 ## Stack
 
-```
-Language     Python 3.11
-Statistics   PyMC · scipy · numpy · statsmodels
-Data         pandas · SQLite · dbt-sqlite
-Dashboard    Streamlit · Plotly
-AI           Google Gemini 1.5 Flash
-CI/CD        GitHub Actions
-Hosting      Hugging Face Spaces (free)
-Dataset      UCI Online Retail II (real data)
-```
-
----
-
-## Project structure
-
-```
-ExperimentOS/
-│
-├── data/
-│   ├── online_retail_II.xlsx    real UCI dataset
-│   └── loader.py                Excel → SQLite pipeline
-│
-├── experiments/
-│   ├── bayesian_ab.py           Bayesian A/B engine
-│   └── cuped.py                 CUPED variance reduction
-│
-├── analytics/
-│   ├── cohort_retention.py      weekly retention heatmap
-│   └── funnel_analysis.py       conversion funnel
-│
-├── memo/
-│   └── decision_memo.py         Gemini memo generator
-│
-├── dbt_project/
-│   └── models/metrics/          governed metric definitions
-│
-├── dashboard/
-│   └── app.py                   Streamlit dashboard
-│
-├── tests/                       27 pytest tests
-│
-├── docs/
-│   ├── problem_statement.md
-│   ├── scope.md
-│   ├── algorithms.md
-│   ├── results.md
-│   └── future_work.md
-│
-└── .github/workflows/
-    ├── ci.yml                   tests on every push
-    └── metric_gate.yml          blocks unapproved metric changes
-```
+| Layer | Tools |
+|---|---|
+| App | Streamlit, Plotly |
+| Data | pandas, SQLite, openpyxl |
+| Statistics | numpy, scipy, PyMC, statsmodels |
+| Experiment methods | Bayesian Beta-Binomial, CUPED, chi-square baseline |
+| Metric governance | dbt project structure, GitHub Actions |
+| Memo generation | Google Gemini |
+| Hosting | Hugging Face Spaces |
 
 ---
 
 ## Documentation
 
-| File | What is in it |
-|---|---|
-| [`docs/problem_statement.md`](docs/problem_statement.md) | The business problem and why it costs millions |
-| [`docs/scope.md`](docs/scope.md) | What is in MVP, what is out, why |
-| [`docs/algorithms.md`](docs/algorithms.md) | The math behind every method |
-| [`docs/results.md`](docs/results.md) | What the real data produced |
-| [`docs/future_work.md`](docs/future_work.md) | What comes next |
+The technical notes are in [`docs/`](docs/):
+
+- [`docs/problem_statement.md`](docs/problem_statement.md)
+- [`docs/scope.md`](docs/scope.md)
+- [`docs/algorithms.md`](docs/algorithms.md)
+- [`docs/results.md`](docs/results.md)
+- [`docs/future_work.md`](docs/future_work.md)
 
 ---
 
-## What is next
+## What This Shows
 
-- Sequential testing with O'Brien-Fleming early stopping
-- DoWhy causal inference for experiment validation
-- PostgreSQL + Docker for production teams
-- Multi-metric guardrail monitoring
-- Slack integration for experiment result notifications
+ExperimentOS is not just a dashboard. It is a compact version of a real experimentation workflow:
 
-All documented in [`docs/future_work.md`](docs/future_work.md)
+1. Load messy transaction data.
+2. Convert it into event, user, and invoice tables.
+3. Run an interpretable Bayesian A/B test.
+4. Reduce experiment duration with CUPED.
+5. Analyze retention and funnel drop-off.
+6. Govern metric definitions in version control.
+7. Generate a decision memo stakeholders can read.
+8. Deploy the whole workflow as a public app.
 
----
+That is the core story: better experiment decisions, faster reads, fewer metric arguments, and a clear record of why the decision was made.
 
-<div align="center">
-
-**Built by Yashwanth**
-M.Tech CSE · Business Analytics · VIT Chennai · Bengaluru
-
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://linkedin.com/in/YOUR_LINKEDIN)
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=flat&logo=github&logoColor=white)](https://github.com/yaswankum2622-code)
-
-<br>
-
-*If this helped you — star the repo.*
-
-⭐
-
-</div>
