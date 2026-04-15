@@ -2,7 +2,7 @@
 title: ExperimentOS
 emoji: 🧪
 colorFrom: indigo
-colorTo: cyan
+colorTo: blue
 sdk: streamlit
 sdk_version: 1.32.0
 app_file: app.py
