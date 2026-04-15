@@ -2,11 +2,22 @@ import os
 import sqlite3
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 
 EXCEL_PATH = Path("data/online_retail_II.xlsx")
 DB_PATH = Path("data/events.db")
+RNG_SEED = 42
+
+PURCHASE_CART_PROBABILITY = 0.65
+PURCHASE_VIEW_PROBABILITY = 0.80
+BROWSE_CART_PROBABILITY = 0.30
+MIN_BROWSE_SESSIONS = 3
+MAX_BROWSE_SESSIONS = 8
+
+TARGET_OVERALL_CONVERSION_RATE = 0.31
+TARGET_CART_TO_PURCHASE_RATE = 0.6413
 
 
 def load_transactions() -> pd.DataFrame:
@@ -69,52 +80,206 @@ def build_users(transactions: pd.DataFrame) -> pd.DataFrame:
     return users
 
 
-def build_events(invoices: pd.DataFrame) -> pd.DataFrame:
+def build_events(
+    invoices: pd.DataFrame,
+    users: pd.DataFrame,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    rng = np.random.default_rng(RNG_SEED)
     event_frames = []
-    event_specs = [
-        ("view", pd.Timedelta(minutes=10), 1),
-        ("add_to_cart", pd.Timedelta(minutes=3), 2),
-        ("purchase", pd.Timedelta(minutes=0), 3),
-    ]
 
-    for event_type, offset, event_order in event_specs:
-        frame = invoices[
-            [
-                "user_id",
-                "timestamp",
-                "invoice_id",
-                "product_id",
-                "country",
-                "variant",
-                "total_revenue",
-            ]
-        ].copy()
-        frame["event_type"] = event_type
-        frame["timestamp"] = frame["timestamp"] - offset
-        frame["revenue"] = frame["total_revenue"] if event_type == "purchase" else 0.0
-        frame["event_order"] = event_order
-        frame = frame.drop(columns=["total_revenue"])
-        event_frames.append(frame)
+    cart_mask = rng.random(len(invoices)) < PURCHASE_CART_PROBABILITY
+    view_mask = cart_mask & (rng.random(len(invoices)) < PURCHASE_VIEW_PROBABILITY)
+
+    event_frames.append(
+        _invoice_events(
+            invoices,
+            "purchase",
+            pd.Timedelta(minutes=0),
+            event_order=3,
+            revenue_from_purchase=True,
+        )
+    )
+    event_frames.append(
+        _invoice_events(
+            invoices.loc[cart_mask],
+            "add_to_cart",
+            pd.Timedelta(minutes=3),
+            event_order=2,
+        )
+    )
+    event_frames.append(
+        _invoice_events(
+            invoices.loc[view_mask],
+            "view",
+            pd.Timedelta(minutes=10),
+            event_order=1,
+        )
+    )
+    event_frames.append(_real_user_browse_events(users, invoices, rng))
 
     events = pd.concat(event_frames, ignore_index=True)
-    events = events.sort_values(["timestamp", "invoice_id", "event_order"]).reset_index(
+    synthetic_events, synthetic_users = _anonymous_browse_events(events, users, rng)
+    events = pd.concat([events, synthetic_events], ignore_index=True)
+
+    events = events.sort_values(["timestamp", "event_order", "user_id"]).reset_index(
         drop=True
     )
     events.insert(0, "event_id", range(1, len(events) + 1))
 
-    return events[
+    return (
+        events[
+            [
+                "event_id",
+                "user_id",
+                "event_type",
+                "timestamp",
+                "invoice_id",
+                "product_id",
+                "revenue",
+                "country",
+                "variant",
+            ]
+        ],
+        synthetic_users,
+    )
+
+
+def _invoice_events(
+    invoices: pd.DataFrame,
+    event_type: str,
+    offset: pd.Timedelta,
+    event_order: int,
+    revenue_from_purchase: bool = False,
+) -> pd.DataFrame:
+    frame = invoices[
         [
-            "event_id",
             "user_id",
-            "event_type",
             "timestamp",
             "invoice_id",
             "product_id",
-            "revenue",
             "country",
             "variant",
+            "total_revenue",
         ]
-    ]
+    ].copy()
+    frame["event_type"] = event_type
+    frame["timestamp"] = frame["timestamp"] - offset
+    frame["revenue"] = frame["total_revenue"] if revenue_from_purchase else 0.0
+    frame["event_order"] = event_order
+    return frame.drop(columns=["total_revenue"])
+
+
+def _real_user_browse_events(
+    users: pd.DataFrame,
+    invoices: pd.DataFrame,
+    rng: np.random.Generator,
+) -> pd.DataFrame:
+    session_counts = rng.integers(
+        MIN_BROWSE_SESSIONS,
+        MAX_BROWSE_SESSIONS + 1,
+        size=len(users),
+    )
+    repeated_users = users.loc[
+        users.index.repeat(session_counts),
+        ["user_id", "country", "variant"],
+    ].reset_index(drop=True)
+    repeated_users["timestamp"] = _random_timestamps(
+        invoices["timestamp"].min(),
+        invoices["timestamp"].max(),
+        len(repeated_users),
+        rng,
+    )
+
+    view_events = repeated_users.copy()
+    view_events["event_type"] = "view"
+    view_events["invoice_id"] = None
+    view_events["product_id"] = "BROWSE"
+    view_events["revenue"] = 0.0
+    view_events["event_order"] = 1
+
+    cart_mask = rng.random(len(repeated_users)) < BROWSE_CART_PROBABILITY
+    cart_events = repeated_users.loc[cart_mask].copy()
+    cart_events["timestamp"] = cart_events["timestamp"] + pd.Timedelta(minutes=3)
+    cart_events["event_type"] = "add_to_cart"
+    cart_events["invoice_id"] = None
+    cart_events["product_id"] = "BROWSE"
+    cart_events["revenue"] = 0.0
+    cart_events["event_order"] = 2
+
+    return pd.concat([view_events, cart_events], ignore_index=True)
+
+
+def _anonymous_browse_events(
+    events: pd.DataFrame,
+    users: pd.DataFrame,
+    rng: np.random.Generator,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    purchasers = events.loc[events["event_type"] == "purchase", "user_id"].nunique()
+    target_viewers = round(purchasers / TARGET_OVERALL_CONVERSION_RATE)
+    target_cart_adders = round(purchasers / TARGET_CART_TO_PURCHASE_RATE)
+
+    current_viewers = events.loc[events["event_type"] == "view", "user_id"].nunique()
+    current_cart_adders = events.loc[
+        events["event_type"] == "add_to_cart",
+        "user_id",
+    ].nunique()
+
+    extra_viewers = max(0, target_viewers - current_viewers)
+    extra_cart_adders = max(0, target_cart_adders - current_cart_adders)
+    extra_cart_adders = min(extra_cart_adders, extra_viewers)
+
+    if extra_viewers == 0:
+        return pd.DataFrame(columns=events.columns), pd.DataFrame(columns=users.columns)
+
+    start_user_id = int(users["user_id"].max()) + 1
+    user_ids = np.arange(start_user_id, start_user_id + extra_viewers)
+    timestamps = _random_timestamps(
+        events["timestamp"].min(),
+        events["timestamp"].max(),
+        extra_viewers,
+        rng,
+    )
+    countries = rng.choice(users["country"].dropna().to_numpy(), size=extra_viewers)
+
+    synthetic_users = pd.DataFrame(
+        {
+            "user_id": user_ids,
+            "first_seen": timestamps,
+            "country": countries,
+            "variant": np.where(user_ids % 2 == 0, "B", "A"),
+            "total_orders": 0,
+            "total_revenue": 0.0,
+        }
+    )
+
+    view_events = synthetic_users[
+        ["user_id", "country", "variant"]
+    ].copy()
+    view_events["timestamp"] = timestamps
+    view_events["event_type"] = "view"
+    view_events["invoice_id"] = None
+    view_events["product_id"] = "BROWSE"
+    view_events["revenue"] = 0.0
+    view_events["event_order"] = 1
+
+    cart_events = view_events.iloc[:extra_cart_adders].copy()
+    cart_events["timestamp"] = cart_events["timestamp"] + pd.Timedelta(minutes=3)
+    cart_events["event_type"] = "add_to_cart"
+    cart_events["event_order"] = 2
+
+    return pd.concat([view_events, cart_events], ignore_index=True), synthetic_users
+
+
+def _random_timestamps(
+    start: pd.Timestamp,
+    end: pd.Timestamp,
+    count: int,
+    rng: np.random.Generator,
+) -> pd.Series:
+    start_second = pd.Timestamp(start).value // 1_000_000_000
+    end_second = pd.Timestamp(end).value // 1_000_000_000
+    random_seconds = rng.integers(start_second, end_second + 1, size=count)
+    return pd.to_datetime(random_seconds, unit="s")
 
 
 def write_sqlite(events: pd.DataFrame, users: pd.DataFrame, invoices: pd.DataFrame) -> None:
@@ -139,8 +304,9 @@ def write_sqlite(events: pd.DataFrame, users: pd.DataFrame, invoices: pd.DataFra
 def main() -> None:
     transactions = load_transactions()
     invoices = build_invoices(transactions)
-    users = build_users(transactions)
-    events = build_events(invoices)
+    real_users = build_users(transactions)
+    events, synthetic_users = build_events(invoices, real_users)
+    users = pd.concat([real_users, synthetic_users], ignore_index=True)
 
     write_sqlite(events, users, invoices)
 
