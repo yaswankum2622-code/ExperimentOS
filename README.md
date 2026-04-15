@@ -1,14 +1,51 @@
-# ExperimentOS
+<div align="center">
 
-ExperimentOS is a Bayesian A/B testing and metric governance dashboard built on real e-commerce transaction data.
+<h1>ExperimentOS</h1>
 
-It answers the question product teams actually ask: **"How likely is Variant B to be better than Variant A?"** Instead of stopping at a p-value, it returns a probability, a credible interval, CUPED variance reduction, funnel drop-off, cohort retention, governed metric definitions, and a decision memo written in plain English.
+<h3>Bayesian A/B testing, CUPED variance reduction, and metric governance in one product analytics dashboard.</h3>
 
-**Live app:** https://yaswtutu-experimentos.hf.space  
-**Hugging Face Space:** https://huggingface.co/spaces/yaswtutu/ExperimentOS  
-**GitHub Actions:** https://github.com/yaswankum2622-code/ExperimentOS/actions
+<p>
+ExperimentOS turns noisy product experiments into clear decisions. It tells a team
+<b>"Variant B has a 100% probability of beating Variant A"</b>
+instead of handing them a p-value and leaving the interpretation to a meeting.
+</p>
 
-If the Space is sleeping, the first load can take a little longer because the app regenerates the SQLite database from the Excel dataset when needed.
+<br>
+
+<a href="https://yaswtutu-experimentos.hf.space">
+  <img alt="Live App" src="https://img.shields.io/badge/Open%20Live%20App-534AB7?style=for-the-badge&logo=streamlit&logoColor=white">
+</a>
+<a href="https://huggingface.co/spaces/yaswtutu/ExperimentOS">
+  <img alt="Hugging Face Space" src="https://img.shields.io/badge/Hugging%20Face-Space-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black">
+</a>
+<a href="https://github.com/yaswankum2622-code/ExperimentOS/actions">
+  <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/yaswankum2622-code/ExperimentOS/ci.yml?style=for-the-badge&label=Tests&logo=github&logoColor=white">
+</a>
+<a href="https://python.org">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white">
+</a>
+
+<br><br>
+
+<table>
+  <tr>
+    <td align="center"><b>Bayesian A/B</b><br>Posterior probability</td>
+    <td align="center"><b>CUPED</b><br>25% sample reduction</td>
+    <td align="center"><b>Funnel + Retention</b><br>Realistic drop-off</td>
+    <td align="center"><b>Metric Governance</b><br>dbt-style YAML registry</td>
+    <td align="center"><b>AI Memo</b><br>Stakeholder-ready decision</td>
+  </tr>
+</table>
+
+<br>
+
+<img src="visuals/01-ab-test-engine.png" alt="ExperimentOS dashboard preview" width="95%">
+
+</div>
+
+ExperimentOS is built on the UCI Online Retail II dataset: real UK e-commerce transaction data with real users, countries, invoices, products, revenue, and uneven behavior. The app loads the raw Excel file into SQLite, simulates realistic browsing and cart events, runs statistical analysis, and presents the result as a working Streamlit dashboard.
+
+If the live Space is sleeping, the first load can take a little longer because the app regenerates the SQLite database from the Excel dataset when needed.
 
 ---
 
