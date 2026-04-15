@@ -5,6 +5,7 @@ colorFrom: purple
 colorTo: indigo
 sdk: streamlit
 sdk_version: 1.32.0
+python_version: 3.11
 app_file: dashboard/app.py
 pinned: true
 license: mit
@@ -29,10 +30,10 @@ short_description: Bayesian A/B Testing and Metric Governance Platform
 
 <br>
 
-[![Live App](https://img.shields.io/badge/🚀%20Open%20Live%20App-534AB7?style=for-the-badge&logoColor=white)](https://yaswtutu-experimetos.hf.space)
+[![Live App](https://img.shields.io/badge/🚀%20Open%20Live%20App-534AB7?style=for-the-badge&logoColor=white)](https://yaswtutu-experimentos.hf.space)
 [![HF Space](https://img.shields.io/badge/🤗%20Hugging%20Face-Space-FFD21E?style=for-the-badge&logoColor=black)](https://huggingface.co/spaces/yaswtutu/ExperimentOS)
-[![CI Tests](https://img.shields.io/github/actions/workflow/status/YOUR_USERNAME/ExperimentOS/ci.yml?style=for-the-badge&label=Tests&logo=github&logoColor=white)](https://github.com/YOUR_USERNAME/ExperimentOS/actions)
-[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![CI Tests](https://img.shields.io/github/actions/workflow/status/yaswankum2622-code/ExperimentOS/ci.yml?style=for-the-badge&label=Tests&logo=github&logoColor=white)](https://github.com/yaswankum2622-code/ExperimentOS/actions)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-1D9E75?style=for-the-badge)](LICENSE)
 
 <br>
@@ -69,7 +70,7 @@ dataset. Not a toy demo. Real data, real drop-offs, real seasonal patterns.
 
 <div align="center">
 
-[![Open in HF Spaces](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-xl.svg)](https://yaswtutu-experimetos.hf.space)
+[![Open in HF Spaces](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-xl.svg)](https://yaswtutu-experimentos.hf.space)
 
 **No login · No install · Opens in browser · Free forever**
 
@@ -236,7 +237,7 @@ Change it without approval? The PR fails. Automatically.
 ## Quick start
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/ExperimentOS.git
+git clone https://github.com/yaswankum2622-code/ExperimentOS.git
 cd ExperimentOS
 
 pip install -r requirements.txt
@@ -279,7 +280,7 @@ pytest tests/ -v
 ## Stack
 
 ```
-Language     Python 3.12
+Language     Python 3.11
 Statistics   PyMC · scipy · numpy · statsmodels
 Data         pandas · SQLite · dbt-sqlite
 Dashboard    Streamlit · Plotly
@@ -363,7 +364,7 @@ All documented in [`docs/future_work.md`](docs/future_work.md)
 M.Tech CSE · Business Analytics · VIT Chennai · Bengaluru
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://linkedin.com/in/YOUR_LINKEDIN)
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=flat&logo=github&logoColor=white)](https://github.com/YOUR_USERNAME)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=flat&logo=github&logoColor=white)](https://github.com/yaswankum2622-code)
 
 <br>
 
