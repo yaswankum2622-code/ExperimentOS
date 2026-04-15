@@ -6,6 +6,7 @@ import numpy as np
 import sqlite3
 import os
 import sys
+import subprocess
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -17,6 +18,17 @@ from memo.decision_memo import generate_memo
 
 
 DB_PATH = "data/events.db"
+
+
+def ensure_database() -> None:
+    if os.path.exists(DB_PATH):
+        return
+    if not os.path.exists("data/online_retail_II.xlsx"):
+        return
+    subprocess.run([sys.executable, "data/loader.py"], check=False)
+
+
+ensure_database()
 
 
 st.set_page_config(

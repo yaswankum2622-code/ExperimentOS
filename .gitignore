@@ -1,18 +1,65 @@
+# Python
 __pycache__/
-*.pyc
+**/__pycache__/
+*.py[cod]
 *.pyo
 *.pyd
+*.so
 .Python
+
+# Environment
 .env
-.venv/
 venv/
 env/
+.venv/
 ENV/
+
+# Database — generated files, never commit
+data/events.db
+data/*.db
 *.db
+*.sqlite
+*.sqlite3
+
+# dbt compiled output
+dbt_project/target/
+dbt_project/logs/
+dbt_project/.user.yml
+dbt_project/dbt_packages/
+
+# IDE settings
+.vscode/settings.json
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS metadata
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Logs and temp
+*.log
+*.tmp
+*.temp
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Pytest cache
 .pytest_cache/
-.mypy_cache/
-.coverage
-htmlcov/
+.cache/
+*.pytest_cache
+
+# Distribution
+*.egg-info/
 dist/
 build/
-*.egg-info/
+*.egg
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
